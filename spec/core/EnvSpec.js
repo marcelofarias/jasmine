@@ -29,7 +29,9 @@ describe("Env", function() {
   it('can configure specs to throw errors on expectation failures', function() {
     env.throwOnExpectationFailure(true);
 
-    spyOn(j$, 'Spec');
+    var proto = j$.Spec.prototype; 
+    spyOn(j$, 'Spec').and.callThrough();
+    j$.Spec.prototype = proto; 
     env.it('foo', function() {});
     expect(j$.Spec).toHaveBeenCalledWith(jasmine.objectContaining({
       throwOnExpectationFailure: true
@@ -39,7 +41,9 @@ describe("Env", function() {
   it('can configure suites to throw errors on expectation failures', function() {
     env.throwOnExpectationFailure(true);
 
-    spyOn(j$, 'Suite');
+    var proto = j$.Suite.prototype;
+    spyOn(j$, 'Suite').and.callThrough();
+    j$.Suite.prototype = proto;
     env.describe('foo', function() {});
     expect(j$.Suite).toHaveBeenCalledWith(jasmine.objectContaining({
       throwOnExpectationFailure: true

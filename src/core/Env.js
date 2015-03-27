@@ -30,10 +30,13 @@ getJasmineRequireObj().Env = function(j$) {
     };
 
     var reporter = new j$.ReportDispatcher([
+      'suiteEnter',
+      'suiteLeave',
       'jasmineStarted',
       'jasmineDone',
       'suiteStarted',
       'suiteDone',
+      'specAdded',
       'specStarted',
       'specDone'
     ]);
@@ -264,10 +267,11 @@ getJasmineRequireObj().Env = function(j$) {
       addSpecsToSuite(suite, specDefinitions);
       return suite;
     };
-
+      
     this.xdescribe = function(description, specDefinitions) {
-      var suite = this.describe(description, specDefinitions);
+      var suite = suiteFactory(description);
       suite.disable();
+      addSpecsToSuite(suite, specDefinitions);
       return suite;
     };
 
@@ -289,12 +293,16 @@ getJasmineRequireObj().Env = function(j$) {
       parentSuite.addChild(suite);
       currentDeclarationSuite = suite;
 
+      reporter.suiteEnter(suite.result, suite.status());
+        
       var declarationError = null;
       try {
         specDefinitions.call(suite);
       } catch (e) {
         declarationError = e;
       }
+        
+      reporter.suiteLeave(suite.result, declarationError);
 
       if (declarationError) {
         self.it('encountered a declaration exception', function() {
@@ -370,17 +378,22 @@ getJasmineRequireObj().Env = function(j$) {
         reporter.specStarted(spec.result);
       }
     };
+      
+    function addSpecToSuite(spec) {
+      currentDeclarationSuite.addChild(spec);
+      reporter.specAdded(spec.result, spec.status());
+      return spec;
+    }
 
     this.it = function(description, fn, timeout) {
       var spec = specFactory(description, fn, currentDeclarationSuite, timeout);
-      currentDeclarationSuite.addChild(spec);
-      return spec;
+      return addSpecToSuite(spec);
     };
 
-    this.xit = function() {
-      var spec = this.it.apply(this, arguments);
+    this.xit = function(description, fn, timeout) {
+      var spec = specFactory(description, fn, currentDeclarationSuite, timeout);
       spec.pend();
-      return spec;
+      return addSpecToSuite(spec);
     };
 
     this.fit = function(){

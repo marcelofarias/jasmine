@@ -14,10 +14,6 @@ getJasmineRequireObj().Spec = function(j$) {
     this.catchingExceptions = attrs.catchingExceptions || function() { return true; };
     this.throwOnExpectationFailure = !!attrs.throwOnExpectationFailure;
 
-    if (!this.queueableFn.fn) {
-      this.pend();
-    }
-
     this.result = {
       id: this.id,
       description: this.description,
@@ -26,6 +22,10 @@ getJasmineRequireObj().Spec = function(j$) {
       passedExpectations: [],
       pendingReason: ''
     };
+      
+    if (!this.queueableFn.fn) {
+      this.pend();
+    }
   }
 
   Spec.prototype.addExpectationResult = function(passed, data) {
